@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Project Pulse</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="dashboard">
+      <header class="dashboard__header">
+        <h1>Project Pulse</h1>
+        <p class="dashboard__subtitle">A quick look at what the Mona team is working on: owners, status, priority, and the latest activity for each project.</p>
+      </header>
+      <p class="dashboard__message" role="status">Loading projects…</p>
+      <section class="dashboard__grid" aria-label="Projects"></section>
+    </main>
+
+    <script>
+      (function () {
+        'use strict';
+
+        const DATA_URL = 'project-data.json';
+        const STATUS_VALUES = ['On track', 'At risk', 'Blocked', 'Completed'];
+        const PRIORITY_VALUES = ['High', 'Medium', 'Low'];
+        const PLACEHOLDER = '—';
+
+        const messageEl = document.querySelector('.dashboard__message');
+        const gridEl = document.querySelector('.dashboard__grid');
+
+        function showMessage(text) {
+          messageEl.classList.remove('dashboard__message--error');
+          messageEl.setAttribute('role', 'status');
+          messageEl.textContent = text;
+          messageEl.hidden = false;
+        }
+
+        function showError(text) {
+          messageEl.classList.add('dashboard__message--error');
+          messageEl.setAttribute('role', 'alert');
+          messageEl.textContent = text;
+          messageEl.hidden = false;
+        }
+
+        function hideMessage() {
+          messageEl.hidden = true;
+        }
+
+        function textOrPlaceholder(value) {
+          if (typeof value === 'string' && value.trim() !== '') {
+            return value.trim();
+          }
+          return PLACEHOLDER;
+        }
+
+        function badgeModifier(kind, value, allowedValues) {
+          if (allowedValues.indexOf(value) === -1) {
+            return 'badge--neutral';
+          }
+          return 'badge--' + kind + '-' + value.toLowerCase().replace(/\s+/g, '-');
+        }
+
+        function createElement(tag, className, text) {
+          const el = document.createElement(tag);
+          el.className = className;
+          if (text !== undefined) {
+            el.textContent = text;
+          }
+          return el;
+        }
+
+        function createBadge(kind, value, allowedValues) {
+          return createElement('span', 'badge ' + badgeModifier(kind, value, allowedValues), value);
+        }
+
+        function createProjectCard(project) {
+          const item = project && typeof project === 'object' ? project : {};
+          const name = textOrPlaceholder(item.name);
+          const owner = textOrPlaceholder(item.owner);
+          const status = textOrPlaceholder(item.status);
+          const priority = textOrPlaceholder(item.priority);
+          const recentActivity = textOrPlaceholder(item.recentActivity);
+
+          const card = createElement('article', 'project-card');
+          card.appendChild(createElement('h2', 'project-card__name', name));
+
+          const badges = createElement('div', 'project-card__badges');
+          badges.appendChild(createBadge('status', status, STATUS_VALUES));
+          badges.appendChild(createBadge('priority', priority, PRIORITY_VALUES));
+          card.appendChild(badges);
+
+          card.appendChild(createElement('p', 'project-card__owner', 'Owner: ' + owner));
+          card.appendChild(createElement('p', 'project-card__activity', recentActivity));
+
+          return card;
+        }
+
+        function renderProjects(projects) {
+          gridEl.replaceChildren();
+
+          if (projects.length === 0) {
+            showMessage('No projects yet.');
+            return;
+          }
+
+          const fragment = document.createDocumentFragment();
+          projects.forEach(function (project) {
+            fragment.appendChild(createProjectCard(project));
+          });
+          gridEl.appendChild(fragment);
+          hideMessage();
+        }
+
+        async function loadProjects() {
+          if (window.location.protocol === 'file:') {
+            showError('Project Pulse cannot load its data from a file:// URL. Open Run and Debug in VS Code and start "Run Project Pulse Dashboard" to serve the dashboard over HTTP.');
+            return;
+          }
+
+          showMessage('Loading projects…');
+
+          let response;
+          try {
+            response = await fetch(DATA_URL, { cache: 'no-store' });
+          } catch (error) {
+            showError('Could not reach ' + DATA_URL + '. Check that the Project Pulse server is running and try again.');
+            return;
+          }
+
+          if (!response.ok) {
+            showError('Could not load ' + DATA_URL + ' (HTTP ' + response.status + '). Check that the file exists in the app folder.');
+            return;
+          }
+
+          let data;
+          try {
+            data = JSON.parse(await response.text());
+          } catch (error) {
+            showError('The project data in ' + DATA_URL + ' is not valid JSON. Fix the file and reload the page.');
+            return;
+          }
+
+          if (!data || !Array.isArray(data.projects)) {
+            showError('The project data is missing a top-level "projects" list. Update ' + DATA_URL + ' and reload the page.');
+            return;
+          }
+
+          renderProjects(data.projects);
+        }
+
+        loadProjects();
+      })();
+    </script>
+  </body>
+</html>

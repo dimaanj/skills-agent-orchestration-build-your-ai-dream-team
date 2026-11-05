@@ -1,0 +1,46 @@
+{
+  "projects": [
+    {
+      "name": "Contributor Onboarding Guide",
+      "owner": "Mona Lisa",
+      "status": "On track",
+      "recentActivity": "Merged the first-time contributor checklist and added screenshots for the setup steps.",
+      "priority": "High"
+    },
+    {
+      "name": "CI Pipeline Modernization",
+      "owner": "Hubot",
+      "status": "At risk",
+      "recentActivity": "Matrix builds are 40% slower after the runner upgrade; investigating cache misses.",
+      "priority": "High"
+    },
+    {
+      "name": "Accessibility Audit",
+      "owner": "Octocat",
+      "status": "Blocked",
+      "recentActivity": "Waiting on design tokens for the new color palette before contrast fixes can land.",
+      "priority": "Medium"
+    },
+    {
+      "name": "Docs Site Search",
+      "owner": "Ada Lovelace",
+      "status": "Completed",
+      "recentActivity": "Shipped full-text search with keyboard shortcuts and closed the tracking issue.",
+      "priority": "Low"
+    },
+    {
+      "name": "Release Notes Automation",
+      "owner": "Grace Hopper",
+      "status": "On track",
+      "recentActivity": "Drafted the changelog generator and opened a pull request for review.",
+      "priority": "Medium"
+    },
+    {
+      "name": "Community Discussions Cleanup",
+      "owner": "Linus Byte",
+      "status": "At risk",
+      "recentActivity": "Triaged 120 stale threads; moderation labels still need team sign-off.",
+      "priority": "Low"
+    }
+  ]
+}
